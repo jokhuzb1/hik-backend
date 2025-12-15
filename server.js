@@ -24,7 +24,7 @@ const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
 // Deduplication Config
-const EVENT_COOLDOWN = 60 * 1000; // 60 seconds
+const EVENT_COOLDOWN = 5 * 1000; // 5 seconds
 
 // ===== SETUP =====
 const app = express();
@@ -146,7 +146,15 @@ async function notifyUser(type, imageBuffer) {
 
 // ===== WATCHER (The Core Logic) =====
 // Watch for NEW files in the FTP root (where camera uploads first)
-chokidar.watch(FTP_ROOT, { ignoreInitial: true, depth: 0 }).on("add", async (filePath) => {
+// Watch for NEW files in the FTP root (where camera uploads first)
+chokidar.watch(FTP_ROOT, {
+  ignoreInitial: true,
+  depth: 0,
+  awaitWriteFinish: {
+    stabilityThreshold: 2000,
+    pollInterval: 100
+  }
+}).on("add", async (filePath) => {
   // Ignore files already in subfolders (shouldn't be any now, but safety check)
   if (path.dirname(filePath) !== FTP_ROOT) return;
 
@@ -168,23 +176,20 @@ chokidar.watch(FTP_ROOT, { ignoreInitial: true, depth: 0 }).on("add", async (fil
 
   console.log(`⚡ Processing ${eventType}: ${fileName}`);
 
-  // Wait a brief moment to ensure write complete (FTP stream)
-  setTimeout(async () => {
-    try {
-      // 1. Read file to buffer
-      const imageBuffer = fs.readFileSync(filePath);
+  try {
+    // 1. Read file to buffer
+    const imageBuffer = fs.readFileSync(filePath);
 
-      // 2. Delete file immediately
-      fs.unlinkSync(filePath);
-      console.log(`🗑️  Deleted temp file: ${fileName}`);
+    // 2. Delete file immediately
+    fs.unlinkSync(filePath);
+    console.log(`🗑️  Deleted temp file: ${fileName}`);
 
-      // 3. Notify (Telegram + Socket)
-      await notifyUser(eventType, imageBuffer);
+    // 3. Notify (Telegram + Socket)
+    await notifyUser(eventType, imageBuffer);
 
-    } catch (err) {
-      console.error("Processing Error:", err);
-    }
-  }, 2000); // Increased delay to 2s to ensure FTP upload completes
+  } catch (err) {
+    console.error("Processing Error:", err);
+  }
 });
 
 
