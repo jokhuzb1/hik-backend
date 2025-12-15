@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hikvision Live Face Feed</title>
+  </head>
+  <body>
+    <h2>Live Face Capture</h2>
+
+    <img id="liveImage" width="350" alt="Waiting for image..." />
+
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+    <script>
+      const socket = io("http://localhost:3000");
+
+      socket.on("face_image", (data) => {
+        document.getElementById("liveImage").src = data.img;
+        console.log("Image received");
+      });
+    </script>
+  </body>
+</html>

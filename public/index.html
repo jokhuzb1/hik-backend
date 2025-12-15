@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Detection Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚗 Vehicle Intelligence</h1>
+            <div class="status-badge online">System Online</div>
+        </header>
+
+        <div class="grid-stats">
+            <div class="card stat-card">
+                <h3>Today</h3>
+                <div class="number" id="count-today">0</div>
+            </div>
+            <div class="card stat-card">
+                <h3>This Week</h3>
+                <div class="number" id="count-week">0</div>
+            </div>
+            <div class="card stat-card">
+                <h3>Total Detected</h3>
+                <div class="number" id="count-total">0</div>
+            </div>
+        </div>
+
+        <div class="grid-main">
+            <div class="card live-feed">
+                <h2>Live Feed</h2>
+                <div class="image-container">
+                    <img id="live-image" src="/ftp/placeholder.png" onerror="this.src='https://placehold.co/600x400/1e1e1e/FFF?text=Waiting+for+Event'" alt="Live Detection">
+                </div>
+                <div class="feed-info">
+                    <span id="latest-type">Waiting...</span>
+                    <span id="latest-time">--:--</span>
+                    <span id="latest-plate" class="plate-number">---</span>
+                </div>
+            </div>
+
+            <div class="card chart-container">
+                <h2>Activity Overview</h2>
+                <canvas id="activityChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card history-section">
+            <h2>Recent Detections</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Type</th>
+                        <th>Plate / Info</th>
+                        <th>Snapshot</th>
+                    </tr>
+                </thead>
+                <tbody id="history-table">
+                    <!-- Rows injected by JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
