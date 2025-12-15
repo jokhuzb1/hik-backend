@@ -184,7 +184,7 @@ chokidar.watch(FTP_ROOT, { ignoreInitial: true, depth: 0 }).on("add", async (fil
     } catch (err) {
       console.error("Processing Error:", err);
     }
-  }, 500); // 500ms delay to ensure file close
+  }, 2000); // Increased delay to 2s to ensure FTP upload completes
 });
 
 
