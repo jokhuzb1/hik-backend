@@ -18,7 +18,7 @@ services:
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
     volumes:
-      - ./events.db:/app/events.db
+      - ./data:/app/data
       - ./ftp:/app/ftp
       - ./uploads:/app/uploads
       - ./vehicles:/app/vehicles

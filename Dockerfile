@@ -11,8 +11,8 @@ RUN npm install --only=production
 
 COPY . .
 
-# Create ftp directory
-RUN mkdir -p ftp
+# Create ftp and data directories
+RUN mkdir -p ftp data
 
 # Expose Web, FTP Control, and FTP Passive ports
 EXPOSE 3000 21 9100-9200
