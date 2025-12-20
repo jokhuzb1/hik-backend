@@ -7,7 +7,7 @@ services:
     restart: unless-stopped
     network_mode: "host"
     environment:
-      - PORT=3000
+      - PORT=9000
       - FTP_PORT=21
       - FTP_USER=${FTP_USER:-hik}
       - FTP_PASS=${FTP_PASS:-1234}
