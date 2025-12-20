@@ -1,0 +1,7 @@
+node_modules
+events.db
+uploads
+vehicles
+snapshots
+.git
+.env

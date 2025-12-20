@@ -97,5 +97,13 @@ module.exports = {
   getRecentDetections,
   getStats,
   addSubscriber,
-  getSubscribers
+  getSubscribers,
+  removeSubscriber: (chatId) => {
+    return new Promise((resolve, reject) => {
+      db.run("DELETE FROM subscribers WHERE chat_id = ?", [chatId], function (err) {
+        if (err) reject(err);
+        else resolve(this.changes > 0);
+      });
+    });
+  }
 };
