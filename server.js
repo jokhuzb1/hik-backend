@@ -70,20 +70,31 @@ const lastAction = {
 };
 
 // ===== FTP SERVER =====
+const bunyan = require("bunyan");
+const log = bunyan.createLogger({ name: "ftp-server" });
+
 const ftpServer = new FtpSrv({
   url: `ftp://0.0.0.0:${FTP_PORT}`,
   pasv_url: PASV_URL,
   pasv_min: PASV_MIN,
   pasv_max: PASV_MAX,
   anonymous: false,
+  log: log
 });
 
 ftpServer.on("login", ({ username, password }, resolve, reject) => {
+  console.log(`🔑 FTP Login attempt: ${username}`);
   if (username === FTP_USER && password === FTP_PASS) {
+    console.log("✅ FTP Login successful");
     resolve({ root: FTP_ROOT });
   } else {
+    console.log("❌ FTP Login failed");
     reject(new Error("Invalid credentials"));
   }
+});
+
+ftpServer.on("client-error", ({ connection, context, error }) => {
+  console.error("⚠️ FTP Client Error:", error.message);
 });
 
 ftpServer.listen().then(() => {

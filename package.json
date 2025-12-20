@@ -13,7 +13,9 @@
   "type": "commonjs",
   "dependencies": {
     "axios": "^1.13.2",
+    "basic-ftp": "^5.0.5",
     "body-parser": "^2.2.1",
+    "bunyan": "^1.8.15",
     "chokidar": "^3.6.0",
     "cors": "^2.8.5",
     "dicer": "^0.3.1",
