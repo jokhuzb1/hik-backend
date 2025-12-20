@@ -6,15 +6,15 @@ services:
     container_name: hik-app
     restart: unless-stopped
     ports:
-      - "3000:3000"
-      - "21:21"
-      - "10000-10100:10000-10100"
+      - "9000:3000"
+      - "9021:21"
+      - "9100-9200:9100-9200"
     environment:
       - PORT=3000
       - FTP_PORT=21
-      - PASV_URL=${PASV_URL:-77.237.245.47} # Default to VPS IP if not set
-      - PASV_MIN=10000
-      - PASV_MAX=10100
+      - PASV_URL=${PASV_URL:-77.237.245.47}
+      - PASV_MIN=9100
+      - PASV_MAX=9200
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
     volumes:

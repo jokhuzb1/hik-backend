@@ -15,6 +15,6 @@ COPY . .
 RUN mkdir -p ftp
 
 # Expose Web, FTP Control, and FTP Passive ports
-EXPOSE 3000 21 10000-10100
+EXPOSE 3000 21 9100-9200
 
 CMD ["node", "server.js"]
