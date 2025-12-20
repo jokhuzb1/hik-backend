@@ -7,7 +7,7 @@ services:
     restart: unless-stopped
     ports:
       - "9000:3000"
-      - "9021:21"
+      - "21:21"
       - "9100-9200:9100-9200"
     environment:
       - PORT=3000
