@@ -12,6 +12,8 @@ services:
     environment:
       - PORT=3000
       - FTP_PORT=21
+      - FTP_USER=${FTP_USER:-hik}
+      - FTP_PASS=${FTP_PASS:-1234}
       - PASV_URL=${PASV_URL:-77.237.245.47}
       - PASV_MIN=10000
       - PASV_MAX=10100
