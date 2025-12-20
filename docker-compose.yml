@@ -8,13 +8,13 @@ services:
     ports:
       - "9000:3000"
       - "21:21"
-      - "9100-9200:9100-9200"
+      - "10000-10100:10000-10100"
     environment:
       - PORT=3000
       - FTP_PORT=21
       - PASV_URL=${PASV_URL:-77.237.245.47}
-      - PASV_MIN=9100
-      - PASV_MAX=9200
+      - PASV_MIN=10000
+      - PASV_MAX=10100
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
     volumes:
