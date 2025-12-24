@@ -11,13 +11,14 @@ const ftpServer = new FtpSrv({
   pasv_url: process.env.PASV_URL || "77.237.245.47", // Use VPS IP
   pasv_min: 10000,
   pasv_max: 10100,
-  anonymous: false,
+  anonymous: true, // Allow anonymous login
   log: log // Enable built-in logging
 });
 
 ftpServer.on("login", ({ username, password }, resolve, reject) => {
   console.log(`🔑 Login attempt: ${username}`);
-  if (username === "hik" && password === "1234") {
+
+  if (username === 'anonymous' || (username === "hik" && password === "1234")) {
     console.log("✅ Login successful");
     resolve({ root: "./ftp" }); // Ensure this folder exists!
   } else {
@@ -27,6 +28,9 @@ ftpServer.on("login", ({ username, password }, resolve, reject) => {
 });
 
 ftpServer.on("client-error", ({ connection, context, error }) => {
+  if (error.code === 'ECONNRESET' || error.message.includes('ECONNRESET')) {
+    return;
+  }
   console.error("⚠️ FTP Client Error:", error.message);
 });
 

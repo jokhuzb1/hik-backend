@@ -78,13 +78,15 @@ const ftpServer = new FtpSrv({
   pasv_url: PASV_URL,
   pasv_min: PASV_MIN,
   pasv_max: PASV_MAX,
-  anonymous: false,
+  anonymous: true, // Allow anonymous login
   log: log
 });
 
 ftpServer.on("login", ({ username, password }, resolve, reject) => {
   console.log(`🔑 FTP Login attempt: ${username}`);
-  if (username === FTP_USER && password === FTP_PASS) {
+
+  // Allow anonymous OR correct credentials
+  if (username === 'anonymous' || (username === FTP_USER && password === FTP_PASS)) {
     console.log("✅ FTP Login successful");
     resolve({ root: FTP_ROOT });
   } else {
@@ -94,6 +96,10 @@ ftpServer.on("login", ({ username, password }, resolve, reject) => {
 });
 
 ftpServer.on("client-error", ({ connection, context, error }) => {
+  // Ignore benign connection resets common with cameras
+  if (error.code === 'ECONNRESET' || error.message.includes('ECONNRESET')) {
+    return;
+  }
   console.error("⚠️ FTP Client Error:", error.message);
 });
 
