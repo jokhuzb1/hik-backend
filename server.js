@@ -17,7 +17,7 @@ const FTP_PASS = process.env.FTP_PASS || "1234";
 const FTP_ROOT = path.join(__dirname, "ftp");
 const PASV_URL = process.env.PASV_URL || "127.0.0.1";
 const PASV_MIN = process.env.PASV_MIN || 10000;
-const PASV_MAX = process.env.PASV_MAX || 10100;
+const PASV_MAX = process.env.PASV_MAX || 10200;
 
 // Telegram Config
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
@@ -232,7 +232,7 @@ chokidar.watch(FTP_ROOT, {
   ignoreInitial: true,
   depth: 0,
   awaitWriteFinish: {
-    stabilityThreshold: 1000,
+    stabilityThreshold: 3000,
     pollInterval: 100
   }
 }).on("add", async (filePath) => {
@@ -291,13 +291,21 @@ chokidar.watch(FTP_ROOT, {
   // QUEUEING (No Deduplication, just Ordering)
   try {
     const startRead = Date.now();
-    // 1. Read file to buffer
+    // 2. Check for empty files (extra safety vs chokidar)
+    const stats = fs.statSync(filePath);
+    if (stats.size === 0) {
+      console.warn(`⚠️ Skipping empty file: ${fileName}`);
+      try { fs.unlinkSync(filePath); } catch (e) { }
+      return;
+    }
+
+    // 3. Read file to buffer
     const imageBuffer = fs.readFileSync(filePath);
 
-    // 2. Delete file immediately
+    // 4. Delete file immediately
     try { fs.unlinkSync(filePath); } catch (delErr) { }
 
-    // 3. Add to Queue
+    // 5. Add to Queue
     fileQueue.push({ metadata, buffer: imageBuffer, addedAt: Date.now() });
     console.log(`📥 Queued: ${fileName} (Queue Size: ${fileQueue.length})`);
 

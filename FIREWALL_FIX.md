@@ -23,7 +23,7 @@ ufw allow 21/tcp
 ufw allow 9000/tcp
 
 # Allow FTP passive mode ports
-ufw allow 10000:10100/tcp
+ufw allow 10000:10200/tcp
 
 # Reload firewall
 ufw reload
@@ -46,7 +46,7 @@ ufw enable
 ufw allow ssh  # IMPORTANT: Allow SSH first!
 ufw allow 21/tcp
 ufw allow 9000/tcp
-ufw allow 10000:10100/tcp
+ufw allow 10000:10200/tcp
 ```
 
 ## Alternative: Disable firewall temporarily to test
@@ -62,5 +62,5 @@ ufw disable
 ufw enable
 ufw allow 21/tcp
 ufw allow 9000/tcp
-ufw allow 10000:10100/tcp
+ufw allow 10000:10200/tcp
 ```

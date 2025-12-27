@@ -13,9 +13,11 @@ services:
       - FTP_PASS=${FTP_PASS:-1234}
       - PASV_URL=${PASV_URL:-77.237.245.47}
       - PASV_MIN=10000
-      - PASV_MAX=10100
+      - PASV_MAX=10200 # Changed from 10100 to 10200 based on instruction
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+    ports: # Added ports section to expose the passive port range
+      - "10000-10200:10000-10200"
     volumes:
       - ./data:/app/data
       - ./ftp:/app/ftp
