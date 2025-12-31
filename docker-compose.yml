@@ -13,7 +13,7 @@ services:
       - FTP_PASS=${FTP_PASS:-1234}
       - PASV_URL=${PASV_URL:-77.237.245.47}
       - PASV_MIN=10000
-      - PASV_MAX=10200 # Changed from 10100 to 10200 based on instruction
+      - PASV_MAX=10500 # Changed from 10100 to 10500 to prevent port exhaustion
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
 

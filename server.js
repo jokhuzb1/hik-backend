@@ -16,8 +16,8 @@ const FTP_USER = process.env.FTP_USER || "hik";
 const FTP_PASS = process.env.FTP_PASS || "1234";
 const FTP_ROOT = path.join(__dirname, "ftp");
 const PASV_URL = process.env.PASV_URL || "127.0.0.1";
-const PASV_MIN = process.env.PASV_MIN || 10000;
-const PASV_MAX = process.env.PASV_MAX || 10200;
+const PASV_MIN = parseInt(process.env.PASV_MIN || "10000");
+const PASV_MAX = parseInt(process.env.PASV_MAX || "10500");
 
 // Telegram Config
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
@@ -75,11 +75,13 @@ const log = bunyan.createLogger({ name: "ftp-server" });
 
 const ftpServer = new FtpSrv({
   url: `ftp://0.0.0.0:${FTP_PORT}`,
-  pasv_url: PASV_URL,
+  pasv_url: () => PASV_URL, // Use function to avoid Active mode binding to Public IP
   pasv_min: PASV_MIN,
-  pasv_max: PASV_MAX,
-  anonymous: true, // Allow anonymous login
-  log: log
+  pasv_max: PASV_MAX, // Extended range
+  anonymous: true,
+  log: log,
+  file_format: "ep" // Format: Ephemeral (no permanent storage if possible? or maybe "ls" format)
+  // defaults are usually fine
 });
 
 ftpServer.on("login", ({ username, password }, resolve, reject) => {
