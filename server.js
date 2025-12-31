@@ -157,10 +157,7 @@ async function notifyUser(metadata, imageBuffer) {
   if (bot) {
     try {
       // 1. Validate Image Buffer
-      if (!imageBuffer || imageBuffer.length === 0) {
-        console.error("❌ IMAGE_PROCESS_FAILED: Buffer is empty");
-        return;
-      }
+      const isImageAvailable = imageBuffer && imageBuffer.length > 0;
 
       // 2. Get List
       const subscribers = await db.getSubscribers();
@@ -169,13 +166,20 @@ async function notifyUser(metadata, imageBuffer) {
         subscribers.push(TELEGRAM_CHAT_ID);
       }
 
-      console.log(`📢 Broadcasting to ${subscribers.length} subscribers`);
+      console.log(`📢 Broadcasting to ${subscribers.length} subscribers (Image: ${isImageAvailable ? 'Yes' : 'No'})`);
 
       // 3. Send to all
       const promises = subscribers.map(async (chatId) => {
         try {
-          // Send raw buffer for highest quality
-          await bot.telegram.sendPhoto(chatId, { source: imageBuffer }, { caption: caption, parse_mode: 'HTML' });
+          if (isImageAvailable) {
+            // Send Photo
+            await bot.telegram.sendPhoto(chatId, { source: imageBuffer }, { caption: caption, parse_mode: 'HTML' });
+          } else {
+            // Send Text Only (Image Failed)
+            await bot.telegram.sendMessage(chatId, caption + "\n\n⚠️ <i>Rasm yuklanmadi (Aloqa xatosi)</i>", { parse_mode: 'HTML' });
+          }
+          console.log(`✅ Sent to ${chatId}`);
+        } catch (e) {
           console.log(`✅ Sent to ${chatId}`);
         } catch (e) {
           if (e.response && e.response.error_code === 403) {
@@ -246,8 +250,9 @@ chokidar.watch(FTP_ROOT, {
   // PARSE METADATA
   // Regex: IP_Channel_Timestamp_Event.jpg
   // Example: 192.168.1.64_01_20251219213552789_line_crossing_detection.jpg
+  // Note: IP might be missing (e.g. _01_2025...)
 
-  const regex = /^([^_]+)_([^_]+)_(\d{14,})_(.*)\.(jpg|jpeg|png)$/i;
+  const regex = /^([^_]*)_([^_]+)_(\d{14,})_(.*)\.(jpg|jpeg|png)$/i;
   const match = fileName.match(regex);
 
   let metadata = {
@@ -260,7 +265,7 @@ chokidar.watch(FTP_ROOT, {
   };
 
   if (match) {
-    metadata.ip = match[1];
+    metadata.ip = match[1] || "Unknown";
     metadata.channel = match[2];
     metadata.originalTime = match[3];
     metadata.eventType = match[4]; // e.g. "LINE_CROSSING_DETECTION" or "LINE_CROSSING_DETECTION_1"
@@ -296,7 +301,9 @@ chokidar.watch(FTP_ROOT, {
     // 2. Check for empty files (extra safety vs chokidar)
     const stats = fs.statSync(filePath);
     if (stats.size === 0) {
-      console.warn(`⚠️ Skipping empty file: ${fileName}`);
+      console.warn(`⚠️ Empty file detected: ${fileName}. Sending text-only alert.`);
+      // Send text-only notification
+      notifyUser(metadata, null);
       try { fs.unlinkSync(filePath); } catch (e) { }
       return;
     }
