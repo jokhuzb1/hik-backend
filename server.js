@@ -179,8 +179,6 @@ async function notifyUser(metadata, imageBuffer) {
           }
           console.log(`✅ Sent to ${chatId}`);
         } catch (e) {
-          console.log(`✅ Sent to ${chatId}`);
-        } catch (e) {
           if (e.response && e.response.error_code === 403) {
             console.log(`🚫 ${chatId} blocked the bot. Removing from subscribers.`);
             await db.removeSubscriber(chatId);
