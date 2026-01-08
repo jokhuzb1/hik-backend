@@ -247,14 +247,15 @@ chokidar.watch(FTP_ROOT, {
   ignoreInitial: true,
   depth: 0,
   awaitWriteFinish: {
-    stabilityThreshold: 3000,
-    pollInterval: 100
+    stabilityThreshold: 5000, // Wait 5 seconds for file to stabilize
+    pollInterval: 200
   }
 }).on("add", async (filePath) => {
   // Ignore files already in subfolders (shouldn't be any now, but safety check)
   if (path.dirname(filePath) !== FTP_ROOT) return;
 
   const fileName = path.basename(filePath);
+  console.log(`📁 File detected: ${fileName}`);
 
   // PARSE METADATA
   // Regex: IP_Channel_Timestamp_Event.jpg
@@ -306,11 +307,34 @@ chokidar.watch(FTP_ROOT, {
 
   // QUEUEING (No Deduplication, just Ordering)
   try {
-    const startRead = Date.now();
-    // 2. Check for empty files (extra safety vs chokidar)
-    const stats = fs.statSync(filePath);
-    if (stats.size === 0) {
-      console.warn(`⚠️ Empty file detected: ${fileName}. Sending text-only alert.`);
+    // Retry logic: Wait for the file to have content (camera may still be writing)
+    let stats;
+    let retries = 0;
+    const maxRetries = 10;
+    const retryDelay = 500; // 500ms between retries
+
+    while (retries < maxRetries) {
+      try {
+        stats = fs.statSync(filePath);
+        if (stats.size > 0) {
+          console.log(`📊 File size: ${stats.size} bytes (attempt ${retries + 1})`);
+          break;
+        }
+      } catch (e) {
+        // File might have been deleted
+        console.warn(`⚠️ File no longer exists: ${fileName}`);
+        return;
+      }
+
+      retries++;
+      if (retries < maxRetries) {
+        console.log(`⏳ Waiting for file content (attempt ${retries}/${maxRetries})...`);
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+      }
+    }
+
+    if (!stats || stats.size === 0) {
+      console.warn(`⚠️ Empty file after ${maxRetries} attempts: ${fileName}. Sending text-only alert.`);
       // Send text-only notification
       notifyUser(metadata, null);
       try { fs.unlinkSync(filePath); } catch (e) { }
@@ -319,6 +343,7 @@ chokidar.watch(FTP_ROOT, {
 
     // 3. Read file to buffer
     const imageBuffer = fs.readFileSync(filePath);
+    console.log(`📖 Read ${imageBuffer.length} bytes from ${fileName}`);
 
     // 4. Delete file immediately
     try { fs.unlinkSync(filePath); } catch (delErr) { }
