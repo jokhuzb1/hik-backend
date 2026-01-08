@@ -155,8 +155,9 @@ async function notifyUser(metadata, imageBuffer) {
   // Telegram Broadcast
   if (bot) {
     try {
-      // 1. Validate Image Buffer (Must be > 1KB to be a valid image)
-      const isImageAvailable = imageBuffer && imageBuffer.length > 1024;
+      // 1. Validate Image Buffer
+      const isImageAvailable = imageBuffer && imageBuffer.length > 0;
+      if (imageBuffer) console.log(`Processing image size: ${imageBuffer.length} bytes`);
 
       // 2. Get List
       const subscribers = await db.getSubscribers();
@@ -174,11 +175,22 @@ async function notifyUser(metadata, imageBuffer) {
             // Send Photo
             await bot.telegram.sendPhoto(chatId, { source: imageBuffer }, { caption: caption, parse_mode: 'HTML' });
           } else {
-            // Send Text Only (Image Failed)
+            // Send Text Only (Image Failed or Empty)
             await bot.telegram.sendMessage(chatId, caption + "\n\n⚠️ <i>Rasm yuklanmadi (Aloqa xatosi)</i>", { parse_mode: 'HTML' });
           }
           console.log(`✅ Sent to ${chatId}`);
         } catch (e) {
+          // Fallback: If sending photo fails (e.g. 400 Bad Request), try sending text
+          if (isImageAvailable) {
+            try {
+              await bot.telegram.sendMessage(chatId, caption + "\n\n⚠️ <i>Rasm formatida xatolik (Telegram yuborib bo'lmadi)</i>", { parse_mode: 'HTML' });
+              console.log(`⚠️ Sent fallback text to ${chatId}`);
+              return;
+            } catch (err2) {
+              // ignore double fail
+            }
+          }
+
           if (e.response && e.response.error_code === 403) {
             console.log(`🚫 ${chatId} blocked the bot. Removing from subscribers.`);
             await db.removeSubscriber(chatId);
