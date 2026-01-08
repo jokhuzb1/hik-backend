@@ -208,17 +208,19 @@ async function notifyUser(metadata, imageBuffer) {
     }
   }
 
-  // Web Dashboard (Socket.IO)
-  try {
-    const base64Image = `data:image/jpeg;base64,${imageBuffer.toString('base64')}`;
-    io.emit('new_event', {
-      type: evtLower.includes("face") ? "faces" : "vehicles",
-      image_path: base64Image,
-      timestamp: metadata.timestamp, // JS Date timestamp
-      plate: "Unknown"
-    });
-  } catch (err) {
-    console.error("Socket Emit Error:", err.message);
+  // Web Dashboard (Socket.IO) - only emit if we have an image
+  if (imageBuffer && imageBuffer.length > 0) {
+    try {
+      const base64Image = `data:image/jpeg;base64,${imageBuffer.toString('base64')}`;
+      io.emit('new_event', {
+        type: evtLower.includes("face") ? "faces" : "vehicles",
+        image_path: base64Image,
+        timestamp: metadata.timestamp, // JS Date timestamp
+        plate: "Unknown"
+      });
+    } catch (err) {
+      console.error("Socket Emit Error:", err.message);
+    }
   }
 }
 
