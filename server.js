@@ -71,24 +71,23 @@ const lastAction = {
 
 // ===== FTP SERVER =====
 const bunyan = require("bunyan");
-const log = bunyan.createLogger({ name: "ftp-server" });
+const log = bunyan.createLogger({ name: "ftp-server", level: "fatal" });
 
 const ftpServer = new FtpSrv({
   url: `ftp://0.0.0.0:${FTP_PORT}`,
   pasv_url: () => PASV_URL, // Use function to avoid Active mode binding to Public IP
   pasv_min: PASV_MIN,
   pasv_max: PASV_MAX, // Extended range
-  anonymous: true,
-  log: log,
-  file_format: "ep" // Format: Ephemeral (no permanent storage if possible? or maybe "ls" format)
-  // defaults are usually fine
+  anonymous: false, // Disable anonymous login
+  log: log, // Level fatal suppresses internal errors like ECONNRESET
+  file_format: "ep" // Format: Ephemeral
 });
 
 ftpServer.on("login", ({ username, password }, resolve, reject) => {
   console.log(`🔑 FTP Login attempt: ${username}`);
 
-  // Allow anonymous OR correct credentials
-  if (username === 'anonymous' || (username === FTP_USER && password === FTP_PASS)) {
+  // Allow ONLY correct credentials
+  if (username === FTP_USER && password === FTP_PASS) {
     console.log("✅ FTP Login successful");
     resolve({ root: FTP_ROOT });
   } else {
@@ -156,8 +155,8 @@ async function notifyUser(metadata, imageBuffer) {
   // Telegram Broadcast
   if (bot) {
     try {
-      // 1. Validate Image Buffer
-      const isImageAvailable = imageBuffer && imageBuffer.length > 0;
+      // 1. Validate Image Buffer (Must be > 1KB to be a valid image)
+      const isImageAvailable = imageBuffer && imageBuffer.length > 1024;
 
       // 2. Get List
       const subscribers = await db.getSubscribers();
